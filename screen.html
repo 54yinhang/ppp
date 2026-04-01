@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小山课堂数据大屏</title>
+  <link rel="stylesheet" href="./screen.css">
+</head>
+<body>
+  <div class="screen-shell">
+    <header class="screen-header">
+      <div>
+        <div class="screen-badge">XS DATA SCREEN</div>
+        <h1 class="screen-title">杭州市滨江区会员运营大屏</h1>
+        <div class="screen-subtitle">会员分布、考试通过、天气与今日概况同屏展示</div>
+      </div>
+      <div class="screen-header-right">
+        <div class="screen-time" id="screenTime">--:--:--</div>
+        <div class="screen-date" id="screenDate">----年--月--日</div>
+      </div>
+    </header>
+
+    <main class="screen-main">
+      <aside class="screen-side">
+        <section class="screen-panel stat-panel">
+          <div class="panel-title">会员总览</div>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-label">会员总数</div>
+              <div class="stat-value" id="memberTotal">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">今日新增</div>
+              <div class="stat-value" id="memberToday">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">已绑定人数</div>
+              <div class="stat-value" id="memberBound">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">活跃学习</div>
+              <div class="stat-value" id="memberActive">0</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen-panel">
+          <div class="panel-title">考试概况</div>
+          <div class="kpi-row">
+            <div class="kpi-block">
+              <div class="kpi-label">通过人数</div>
+              <div class="kpi-main" id="examPassed">0</div>
+            </div>
+            <div class="kpi-block">
+              <div class="kpi-label">通过率</div>
+              <div class="kpi-main" id="examPassRate">0%</div>
+            </div>
+          </div>
+          <div class="mini-progress">
+            <div class="mini-progress-bar" id="examPassBar"></div>
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span>今日参考</span>
+              <strong id="examToday">0</strong>
+            </div>
+            <div class="info-row">
+              <span>待考试人数</span>
+              <strong id="examPending">0</strong>
+            </div>
+            <div class="info-row">
+              <span>本周新增试卷</span>
+              <strong id="examNewPapers">0</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen-panel">
+          <div class="panel-title">街道活跃榜</div>
+          <div class="rank-list" id="streetRankList"></div>
+        </section>
+      </aside>
+
+      <section class="screen-center">
+        <div class="screen-panel map-panel">
+          <div class="map-panel-head">
+            <div>
+              <div class="panel-title">滨江区街道会员分布</div>
+              <div class="panel-tip">地图中心标记各街道会员数量，适合电视大屏轮播展示</div>
+            </div>
+            <div class="map-total-box">
+              <div class="map-total-label">街道覆盖</div>
+              <div class="map-total-value">3 个街道</div>
+            </div>
+          </div>
+
+          <div class="map-stage">
+            <div class="district-map-wrap" aria-label="杭州市滨江区街道会员分布示意图">
+              <div id="mapChart" style="width: 100%; height: 100%;" aria-label="滨江区 ECharts 地图"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="screen-side">
+        <section class="screen-panel weather-panel">
+          <div class="panel-title">天气与日历</div>
+          <div class="weather-main">
+            <div class="weather-temp" id="weatherTemp">18°C</div>
+            <div>
+              <div class="weather-city">杭州市滨江区</div>
+              <div class="weather-desc" id="weatherDesc">晴转多云</div>
+            </div>
+          </div>
+          <div class="calendar-card">
+            <div class="calendar-day" id="calendarDay">27</div>
+            <div class="calendar-meta">
+              <div id="calendarYearMonth">2026年03月</div>
+              <div id="calendarWeek">星期五</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen-panel">
+          <div class="panel-title">学习与考试动态</div>
+          <div class="info-list">
+            <div class="info-row">
+              <span>视频学习完成</span>
+              <strong id="videoFinished">0</strong>
+            </div>
+            <div class="info-row">
+              <span>AI 咨询次数</span>
+              <strong id="chatCount">0</strong>
+            </div>
+            <div class="info-row">
+              <span>当前在线会员</span>
+              <strong id="onlineMembers">0</strong>
+            </div>
+            <div class="info-row">
+              <span>近 7 日活跃率</span>
+              <strong id="activeRate">0%</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen-panel">
+          <div class="panel-title">街道分布占比</div>
+          <div class="donut-wrap">
+            <div class="donut-ring" id="streetDonut">
+              <div class="donut-inner">
+                <div class="donut-value" id="donutTotal">0</div>
+                <div class="donut-label">会员总量</div>
+              </div>
+            </div>
+          </div>
+          <div class="legend-list" id="streetLegend"></div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script src="./screen.js"></script>
+</body>
+</html>

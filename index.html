@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>滨江协会管理端</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="app" class="admin-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <div class="brand-badge">XS</div>
+        <div>
+          <div class="brand-title">滨江协会</div>
+          <div class="brand-subtitle">滨江协会管理端</div>
+        </div>
+      </div>
+
+      <div id="loginCard" class="sidebar-card">
+        <div class="card-title">管理员登录</div>
+        <div class="card-tip">演示账号：`admin` / `ad123`</div>
+        <form id="loginForm" class="login-form">
+          <label class="field-label" for="username">账号</label>
+          <input id="username" name="username" class="text-input" value="admin" autocomplete="username">
+          <label class="field-label" for="password">密码</label>
+          <input id="password" name="password" type="password" class="text-input" value="ad123" autocomplete="current-password">
+          <button type="submit" class="primary-btn">登录管理端</button>
+        </form>
+      </div>
+
+      <div id="userCard" class="sidebar-card hidden">
+        <div class="card-title">当前会话</div>
+        <div id="adminIdentity" class="identity-name">管理员</div>
+        <div class="card-tip">该管理端用于演示试卷导入、视频维护与激活码管理。</div>
+        <button id="logoutBtn" type="button" class="secondary-btn">退出登录</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="hero-panel">
+        <div>
+          <div class="hero-title">PC 管理台</div>
+          <div class="hero-subtitle">登录、导入试卷、维护视频信息、管理人员激活码都集中在这里。</div>
+        </div>
+        <div class="hero-actions">
+          <a class="ghost-btn hero-link-btn" href="./screen.html" target="_blank" rel="noopener noreferrer">打开大屏</a>
+          <div id="statusBar" class="status-badge">未登录</div>
+        </div>
+      </header>
+
+      <section id="dashboard" class="dashboard hidden">
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-label">试卷总数</div>
+            <div id="paperCount" class="summary-value">0</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">激活码用户</div>
+            <div id="codeUserCount" class="summary-value">0</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">已绑定用户</div>
+            <div id="boundUserCount" class="summary-value">0</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">视频总数</div>
+            <div id="videoCount" class="summary-value">0</div>
+          </div>
+        </div>
+
+        <div class="tab-row">
+          <button type="button" class="tab-btn active" data-tab="import">导入试卷</button>
+          <button type="button" class="tab-btn" data-tab="papers">试卷列表</button>
+          <button type="button" class="tab-btn" data-tab="videos">视频维护</button>
+          <button type="button" class="tab-btn" data-tab="users">人员管理</button>
+        </div>
+
+        <section class="panel tab-panel" data-panel="import">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">导入试卷</div>
+              <div class="panel-tip">试卷名称等信息在页面填写，Excel 只导入题目、选项、答案、图片与排序。</div>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="field-block">
+              <label class="field-label" for="paperTitle">试卷名称</label>
+              <input id="paperTitle" class="text-input" placeholder="例如：安全生产月考试卷">
+            </div>
+            <div class="field-block">
+              <label class="field-label" for="paperDurationMinutes">考试时长（分钟）</label>
+              <input id="paperDurationMinutes" class="text-input" type="number" min="1" placeholder="例如：30">
+            </div>
+            <div class="field-block">
+              <label class="field-label" for="paperRequiresBind">是否需要绑定</label>
+              <select id="paperRequiresBind" class="text-input">
+                <option value="false">否</option>
+                <option value="true">是</option>
+              </select>
+            </div>
+            <div class="field-block">
+              <label class="field-label" for="paperActive">是否启用</label>
+              <select id="paperActive" class="text-input">
+                <option value="true">启用</option>
+                <option value="false">停用</option>
+              </select>
+            </div>
+            <div class="field-block">
+              <label class="field-label" for="paperSortOrder">排序值</label>
+              <input id="paperSortOrder" class="text-input" type="number" min="1" placeholder="不填则自动递增">
+            </div>
+            <div class="field-block">
+              <label class="field-label" for="paperCoverUrl">封面地址</label>
+              <input id="paperCoverUrl" class="text-input" placeholder="https://example.com/paper-cover.png">
+            </div>
+            <div class="field-block span-2">
+              <label class="field-label" for="paperDescription">试卷说明</label>
+              <input id="paperDescription" class="text-input" placeholder="例如：适合新员工培训完成后的统一测验">
+            </div>
+          </div>
+          <div class="import-tools">
+            <input id="excelFileInput" type="file" accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+            <button id="loadExampleBtn" type="button" class="ghost-btn">加载演示题目</button>
+            <button id="resetImportBtn" type="button" class="ghost-btn">清空表单</button>
+          </div>
+          <div id="excelFileMeta" class="upload-meta">未选择 Excel 文件。支持列名：题目、选项A、选项B、选项C、选项D、答案、图片地址、排序。</div>
+          <div class="action-row">
+            <button id="importBtn" type="button" class="primary-btn">导入 Excel 试卷</button>
+            <div id="importMessage" class="inline-message"></div>
+          </div>
+        </section>
+
+        <section class="panel tab-panel hidden" data-panel="papers">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">试卷列表</div>
+              <div class="panel-tip">展示当前系统内全部试卷和题目数量。</div>
+            </div>
+            <button id="refreshPapersBtn" type="button" class="ghost-btn">刷新列表</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>试卷标题</th>
+                  <th>题量</th>
+                  <th>时长</th>
+                  <th>需绑定</th>
+                  <th>状态</th>
+                  <th>排序</th>
+                  <th>创建时间</th>
+                </tr>
+              </thead>
+              <tbody id="paperTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel tab-panel hidden" data-panel="videos">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">视频信息维护</div>
+              <div class="panel-tip">支持新增、编辑、删除视频，并维护视频分类、标签、封面、播放地址等信息。</div>
+            </div>
+            <button id="refreshVideosBtn" type="button" class="ghost-btn">刷新视频</button>
+          </div>
+
+          <div class="form-grid">
+            <div class="field-block">
+              <label class="field-label" for="videoTitle">视频标题</label>
+              <input id="videoTitle" class="text-input" placeholder="例如：接口排查入门视频">
+            </div>
+            <div class="field-block">
+              <label class="field-label" for="videoCategoryId">视频分类</label>
+              <select id="videoCategoryId" class="text-input"></select>
+            </div>
+            <div class="field-block">
+              <label class="field-label" for="videoTag">标签</label>
+              <input id="videoTag" class="text-input" placeholder="多个标签用逗号分隔">
+            </div>
+            <div class="field-block">
+              <label class="field-label" for="videoDuration">时长（秒）</label>
+              <input id="videoDuration" class="text-input" type="number" min="0" placeholder="例如：420">
+            </div>
+            <div class="field-block">
+              <label class="field-label" for="videoRequiresBind">是否需要绑定</label>
+              <select id="videoRequiresBind" class="text-input">
+                <option value="false">否</option>
+                <option value="true">是</option>
+              </select>
+            </div>
+            <div class="field-block">
+              <label class="field-label" for="videoActive">是否启用</label>
+              <select id="videoActive" class="text-input">
+                <option value="true">启用</option>
+                <option value="false">停用</option>
+              </select>
+            </div>
+            <div class="field-block span-2">
+              <label class="field-label" for="videoCoverUrl">封面地址</label>
+              <input id="videoCoverUrl" class="text-input" placeholder="https://example.com/cover.png">
+            </div>
+            <div class="field-block span-2">
+              <label class="field-label" for="videoUrl">视频地址</label>
+              <input id="videoUrl" class="text-input" placeholder="https://example.com/video.mp4">
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button id="saveVideoBtn" type="button" class="primary-btn">保存视频</button>
+            <button id="resetVideoBtn" type="button" class="ghost-btn">新建视频</button>
+            <div id="videoMessage" class="inline-message"></div>
+          </div>
+
+          <div class="table-wrap table-gap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>视频标题</th>
+                  <th>分类</th>
+                  <th>标签</th>
+                  <th>时长</th>
+                  <th>需绑定</th>
+                  <th>状态</th>
+                  <th>创建时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="videoTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel tab-panel hidden" data-panel="users">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">人员管理（激活码）</div>
+              <div class="panel-tip">可查看用户信息，并为单个用户生成或刷新激活码。</div>
+            </div>
+            <div class="filter-box">
+              <input id="userKeyword" class="text-input small-input" placeholder="搜索姓名 / 身份证 / 职务 / 公司 / 手机 / openid">
+              <button id="refreshUsersBtn" type="button" class="ghost-btn">刷新用户</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>姓名</th>
+                  <th>身份证</th>
+                  <th>职务</th>
+                  <th>公司</th>
+                  <th>手机</th>
+                  <th>openid</th>
+                  <th>状态</th>
+                  <th>激活码</th>
+                  <th>更新时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="userTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

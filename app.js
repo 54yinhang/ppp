@@ -18,6 +18,9 @@
     token: localStorage.getItem(STORAGE_KEY) || '',
     papers: [],
     users: [],
+    userExamRecords: [],
+    selectedExamRecordDetail: null,
+    selectedUserId: null,
     videos: [],
     videoCategories: [],
     currentTab: 'import',
@@ -54,6 +57,22 @@
     userTableBody: document.getElementById('userTableBody'),
     videoTableBody: document.getElementById('videoTableBody'),
     userKeyword: document.getElementById('userKeyword'),
+    userDetailPanel: document.getElementById('userDetailPanel'),
+    selectedUserHint: document.getElementById('selectedUserHint'),
+    userEditName: document.getElementById('userEditName'),
+    userEditIdCard: document.getElementById('userEditIdCard'),
+    userEditPosition: document.getElementById('userEditPosition'),
+    userEditCompany: document.getElementById('userEditCompany'),
+    userEditPhone: document.getElementById('userEditPhone'),
+    saveUserBtn: document.getElementById('saveUserBtn'),
+    reloadExamRecordsBtn: document.getElementById('reloadExamRecordsBtn'),
+    userMessage: document.getElementById('userMessage'),
+    userExamEmpty: document.getElementById('userExamEmpty'),
+    userExamTableBody: document.getElementById('userExamTableBody'),
+    examRecordDetailPanel: document.getElementById('examRecordDetailPanel'),
+    examRecordSummary: document.getElementById('examRecordSummary'),
+    examRecordStats: document.getElementById('examRecordStats'),
+    userExamAnswerBody: document.getElementById('userExamAnswerBody'),
     paperCount: document.getElementById('paperCount'),
     codeUserCount: document.getElementById('codeUserCount'),
     boundUserCount: document.getElementById('boundUserCount'),
@@ -231,7 +250,115 @@
           activationCode: '',
           updatedAt: '2026-03-27 10:05:00'
         }
-      ]
+      ],
+      examRecords: {
+        1: [
+          {
+            recordId: 101,
+            userId: 1,
+            userName: '张三',
+            paperId: 1,
+            paperTitle: '新员工入门试卷',
+            score: 100,
+            correctCount: 2,
+            total: 2,
+            usedSeconds: 740,
+            submitTime: '2026-03-27 10:16:00',
+            questions: [
+              {
+                questionId: 101,
+                questionText: '统一响应结构中最推荐保留的三个核心字段是什么？',
+                optionA: 'success、payload、error',
+                optionB: 'code、message、data',
+                optionC: 'status、msg、body',
+                optionD: 'httpCode、detail、content',
+                imageUrl: '',
+                userAnswer: 'B',
+                correctAnswer: 'B',
+                correct: true
+              },
+              {
+                questionId: 102,
+                questionText: '微信小程序登录后最常见需要保存的凭证是什么？',
+                optionA: 'token',
+                optionB: 'Excel 文件',
+                optionC: '图片水印',
+                optionD: '分享海报',
+                imageUrl: '',
+                userAnswer: 'A',
+                correctAnswer: 'A',
+                correct: true
+              }
+            ]
+          },
+          {
+            recordId: 102,
+            userId: 1,
+            userName: '张三',
+            paperId: 2,
+            paperTitle: '会员进阶试卷',
+            score: 50,
+            correctCount: 1,
+            total: 2,
+            usedSeconds: 1280,
+            submitTime: '2026-03-28 09:35:00',
+            questions: [
+              {
+                questionId: 201,
+                questionText: '解绑账号后，下列哪项描述是正确的？',
+                optionA: 'company 保持不变',
+                optionB: 'JWT 继续长期有效',
+                optionC: 'member_status 变成 BOUND',
+                optionD: 'phone 和 company 被清空',
+                imageUrl: '',
+                userAnswer: 'D',
+                correctAnswer: 'D',
+                correct: true
+              },
+              {
+                questionId: 202,
+                questionText: '考试模块升级为多试卷后，提交答案时最合理的额外字段是什么？',
+                optionA: 'paperId',
+                optionB: 'videoId',
+                optionC: 'companyId',
+                optionD: 'msgId',
+                imageUrl: '',
+                userAnswer: 'D',
+                correctAnswer: 'A',
+                correct: false
+              }
+            ]
+          }
+        ],
+        2: [
+          {
+            recordId: 201,
+            userId: 2,
+            userName: '李四',
+            paperId: 3,
+            paperTitle: '月度复训抽测试卷',
+            score: 80,
+            correctCount: 4,
+            total: 5,
+            usedSeconds: 620,
+            submitTime: '2026-03-29 15:12:00',
+            questions: [
+              {
+                questionId: 301,
+                questionText: '演示题 1',
+                optionA: 'A 选项',
+                optionB: 'B 选项',
+                optionC: 'C 选项',
+                optionD: 'D 选项',
+                imageUrl: '',
+                userAnswer: 'A',
+                correctAnswer: 'A',
+                correct: true
+              }
+            ]
+          }
+        ]
+      }
     };
   }
 
@@ -305,6 +432,11 @@
     els.videoMessage.className = 'inline-message' + (type ? ' ' + type : '');
   }
 
+  function setUserMessage(text, type) {
+    els.userMessage.textContent = text || '';
+    els.userMessage.className = 'inline-message' + (type ? ' ' + type : '');
+  }
+
   function updateExcelFileMeta(text) {
     els.excelFileMeta.textContent = text;
   }
@@ -340,6 +472,40 @@
       active: data.active !== false,
       createdAt: createdAt || nowText()
     };
+  }
+
+  function formatUsedSeconds(seconds) {
+    const total = Math.max(0, Number(seconds || 0));
+    const minute = Math.floor(total / 60);
+    const second = total % 60;
+    if (minute > 0) {
+      return minute + '分' + (second < 10 ? '0' + second : second) + '秒';
+    }
+    return total + '秒';
+  }
+
+  function getMockExamRecordsByUser(dataStore, userId) {
+    const examRecords = dataStore.examRecords || {};
+    return examRecords[String(userId)] || examRecords[userId] || [];
+  }
+
+  function buildMockExamRecordSummary(record) {
+    return {
+      recordId: record.recordId,
+      paperId: record.paperId,
+      paperTitle: record.paperTitle,
+      score: record.score,
+      correctCount: record.correctCount,
+      total: record.total,
+      usedSeconds: record.usedSeconds,
+      submitTime: record.submitTime
+    };
+  }
+
+  function getSelectedUser() {
+    return state.users.find(function (item) {
+      return Number(item.userId) === Number(state.selectedUserId);
+    }) || null;
   }
 
   function mockRequest(url, options) {
@@ -485,6 +651,35 @@
             return;
           }
 
+          const userUpdateMatch = url.match(/^\/api\/admin\/users\/(\d+)$/);
+          if (userUpdateMatch && method === 'PUT') {
+            const userId = Number(userUpdateMatch[1]);
+            let updatedUser = null;
+            dataStore.users = (dataStore.users || []).map(function (item) {
+              if (Number(item.userId) !== userId) {
+                return item;
+              }
+              updatedUser = Object.assign({}, item, {
+                name: data.name || '',
+                idCard: data.idCard || '',
+                position: data.position || '',
+                company: data.company || '',
+                phone: data.phone || '',
+                updatedAt: nowText()
+              });
+              return updatedUser;
+            });
+            if (!updatedUser) {
+              throw {
+                code: 400,
+                message: '用户不存在'
+              };
+            }
+            setMockData(dataStore);
+            resolve(updatedUser);
+            return;
+          }
+
           const userMatch = url.match(/^\/api\/admin\/users\/(\d+)\/activation-code$/);
           if (userMatch && method === 'POST') {
             const userId = Number(userMatch[1]);
@@ -507,6 +702,34 @@
             }
             setMockData(dataStore);
             resolve(updatedUser);
+            return;
+          }
+
+          const userExamMatch = url.match(/^\/api\/admin\/users\/(\d+)\/exam-records$/);
+          if (userExamMatch && method === 'GET') {
+            const userId = Number(userExamMatch[1]);
+            resolve(getMockExamRecordsByUser(dataStore, userId).map(buildMockExamRecordSummary));
+            return;
+          }
+
+          const recordDetailMatch = url.match(/^\/api\/admin\/users\/exam-records\/(\d+)$/);
+          if (recordDetailMatch && method === 'GET') {
+            const recordId = Number(recordDetailMatch[1]);
+            const record = Object.keys(dataStore.examRecords || {}).reduce(function (found, userId) {
+              if (found) {
+                return found;
+              }
+              return getMockExamRecordsByUser(dataStore, userId).find(function (item) {
+                return Number(item.recordId) === recordId;
+              }) || null;
+            }, null);
+            if (!record) {
+              throw {
+                code: 400,
+                message: '考试记录不存在'
+              };
+            }
+            resolve(record);
             return;
           }
 
@@ -623,7 +846,8 @@
     els.boundUserCount.textContent = String(boundUserCount);
     els.userTableBody.innerHTML = filteredUsers.map(function (user) {
       const statusClass = user.memberStatus === 'BOUND' ? 'tag-bound' : 'tag-pending';
-      return '<tr>'
+      const selectedClass = Number(state.selectedUserId) === Number(user.userId) ? ' class="selected-row"' : '';
+      return '<tr' + selectedClass + '>'
         + '<td>' + user.userId + '</td>'
         + '<td>' + escapeHtml(user.name || '-') + '</td>'
         + '<td>' + escapeHtml(user.idCard || '-') + '</td>'
@@ -634,9 +858,178 @@
         + '<td><span class="table-tag ' + statusClass + '">' + escapeHtml(user.memberStatus || '-') + '</span></td>'
         + '<td>' + escapeHtml(user.activationCode || '未生成') + '</td>'
         + '<td>' + escapeHtml(user.updatedAt || '-') + '</td>'
-        + '<td><button type="button" class="row-btn" data-user-id="' + user.userId + '">生成/刷新激活码</button></td>'
+        + '<td>'
+        + '<button type="button" class="row-btn" data-action="select-user" data-user-id="' + user.userId + '">查看详情</button>'
+        + '<button type="button" class="row-btn" data-action="refresh-code" data-user-id="' + user.userId + '">生成/刷新激活码</button>'
+        + '</td>'
         + '</tr>';
     }).join('');
+  }
+
+  function fillUserForm(user) {
+    els.userEditName.value = user && user.name ? user.name : '';
+    els.userEditIdCard.value = user && user.idCard ? user.idCard : '';
+    els.userEditPosition.value = user && user.position ? user.position : '';
+    els.userEditCompany.value = user && user.company ? user.company : '';
+    els.userEditPhone.value = user && user.phone ? user.phone : '';
+  }
+
+  function renderUserDetail() {
+    const user = getSelectedUser();
+    const hasUser = !!user;
+    els.userDetailPanel.classList.toggle('hidden', !hasUser);
+    if (!hasUser) {
+      return;
+    }
+    els.selectedUserHint.textContent = '当前用户：' + (user.name || '未命名用户') + ' / openid：' + (user.openid || '-');
+    fillUserForm(user);
+    renderUserExamRecords();
+    renderExamRecordDetail();
+  }
+
+  function renderUserExamRecords() {
+    const records = state.userExamRecords || [];
+    els.userExamEmpty.classList.toggle('hidden', records.length > 0);
+    if (!records.length) {
+      els.userExamTableBody.innerHTML = '';
+      return;
+    }
+    els.userExamTableBody.innerHTML = records.map(function (record) {
+      return '<tr>'
+        + '<td>' + record.recordId + '</td>'
+        + '<td><strong>' + escapeHtml(record.paperTitle || '-') + '</strong></td>'
+        + '<td>' + Number(record.score || 0) + ' 分</td>'
+        + '<td>' + Number(record.correctCount || 0) + ' / ' + Number(record.total || 0) + '</td>'
+        + '<td>' + escapeHtml(formatUsedSeconds(record.usedSeconds)) + '</td>'
+        + '<td>' + escapeHtml(record.submitTime || '-') + '</td>'
+        + '<td><button type="button" class="row-btn" data-record-id="' + record.recordId + '">查看答题详情</button></td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  function renderExamRecordDetail() {
+    const detail = state.selectedExamRecordDetail;
+    els.examRecordDetailPanel.classList.toggle('hidden', !detail);
+    if (!detail) {
+      els.examRecordSummary.textContent = '请选择一条考试记录查看每题答案。';
+      els.examRecordStats.innerHTML = '';
+      els.userExamAnswerBody.innerHTML = '';
+      return;
+    }
+    els.examRecordSummary.textContent = (detail.userName || '该用户') + ' 于 ' + (detail.submitTime || '-')
+      + ' 提交《' + (detail.paperTitle || '-') + '》';
+    els.examRecordStats.innerHTML = [
+      { label: '分数', value: (detail.score || 0) + ' 分' },
+      { label: '正确题数', value: (detail.correctCount || 0) + ' / ' + (detail.total || 0) },
+      { label: '用时', value: formatUsedSeconds(detail.usedSeconds) },
+      { label: '记录 ID', value: detail.recordId || '-' }
+    ].map(function (item) {
+      return '<div class="mini-stat"><div class="mini-stat-label">' + escapeHtml(item.label)
+        + '</div><div class="mini-stat-value">' + escapeHtml(item.value) + '</div></div>';
+    }).join('');
+    els.userExamAnswerBody.innerHTML = (detail.questions || []).map(function (question, index) {
+      const resultText = question.correct ? '正确' : '错误';
+      const resultClass = question.correct ? 'tag-bound' : 'tag-pending';
+      const optionList = ['A', 'B', 'C', 'D'].map(function (key) {
+        const optionText = question['option' + key];
+        if (!optionText) {
+          return '';
+        }
+        return '<div>' + key + '．' + escapeHtml(optionText) + '</div>';
+      }).join('');
+      return '<tr>'
+        + '<td>' + (index + 1) + '</td>'
+        + '<td><strong>' + escapeHtml(question.questionText || '-') + '</strong>'
+        + (question.imageUrl ? '<br><span class="card-tip">' + escapeHtml(question.imageUrl) + '</span>' : '')
+        + '</td>'
+        + '<td>' + optionList + '</td>'
+        + '<td>' + escapeHtml(question.userAnswer || '未作答') + '</td>'
+        + '<td>' + escapeHtml(question.correctAnswer || '-') + '</td>'
+        + '<td><span class="table-tag ' + resultClass + '">' + resultText + '</span></td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  function selectUser(userId) {
+    state.selectedUserId = Number(userId || 0) || null;
+    state.selectedExamRecordDetail = null;
+    state.userExamRecords = [];
+    setUserMessage('', '');
+    renderUsers();
+    renderUserDetail();
+    if (state.selectedUserId) {
+      loadUserExamRecords(state.selectedUserId);
+    }
+  }
+
+  function readUserPayload() {
+    return {
+      name: els.userEditName.value.trim(),
+      idCard: els.userEditIdCard.value.trim(),
+      position: els.userEditPosition.value.trim(),
+      company: els.userEditCompany.value.trim(),
+      phone: els.userEditPhone.value.trim()
+    };
+  }
+
+  function loadUserExamRecords(userId, preferredRecordId) {
+    if (!userId) {
+      return Promise.resolve([]);
+    }
+    return fetchJson('/api/admin/users/' + userId + '/exam-records').then(function (records) {
+      state.userExamRecords = records || [];
+      renderUserDetail();
+      if (state.userExamRecords.length) {
+        return loadExamRecordDetail(preferredRecordId || state.userExamRecords[0].recordId);
+      }
+      state.selectedExamRecordDetail = null;
+      renderExamRecordDetail();
+      return [];
+    }).catch(function (error) {
+      state.userExamRecords = [];
+      state.selectedExamRecordDetail = null;
+      renderUserDetail();
+      setUserMessage(error.message || '加载考试记录失败', 'error');
+      return [];
+    });
+  }
+
+  function loadExamRecordDetail(recordId) {
+    if (!recordId) {
+      return Promise.resolve(null);
+    }
+    return fetchJson('/api/admin/users/exam-records/' + recordId).then(function (detail) {
+      state.selectedExamRecordDetail = detail || null;
+      renderExamRecordDetail();
+      return detail;
+    }).catch(function (error) {
+      state.selectedExamRecordDetail = null;
+      renderExamRecordDetail();
+      setUserMessage(error.message || '加载答题详情失败', 'error');
+      return null;
+    });
+  }
+
+  function handleSaveUser() {
+    const selectedUser = getSelectedUser();
+    if (!selectedUser) {
+      setUserMessage('请先选择用户。', 'error');
+      return;
+    }
+    setUserMessage('正在保存用户资料...', '');
+    fetchJson('/api/admin/users/' + selectedUser.userId, {
+      method: 'PUT',
+      body: JSON.stringify(readUserPayload())
+    }).then(function (updatedUser) {
+      state.users = state.users.map(function (item) {
+        return Number(item.userId) === Number(updatedUser.userId) ? updatedUser : item;
+      });
+      renderUsers();
+      renderUserDetail();
+      setUserMessage('用户资料已更新。', 'success');
+    }).catch(function (error) {
+      setUserMessage(error.message || '保存用户资料失败', 'error');
+    });
   }
 
   function renderVideoCategoryOptions() {
@@ -697,6 +1090,7 @@
       state.videoCategories = result[3] || [];
       renderPapers();
       renderUsers();
+      renderUserDetail();
       renderVideoCategoryOptions();
       renderVideos();
       resetVideoForm(false);
@@ -841,9 +1235,15 @@
   }
 
   function refreshUsers() {
-    fetchJson('/api/admin/users').then(function (users) {
+    return fetchJson('/api/admin/users').then(function (users) {
       state.users = users || [];
+      if (state.selectedUserId && !getSelectedUser()) {
+        state.selectedUserId = null;
+        state.userExamRecords = [];
+        state.selectedExamRecordDetail = null;
+      }
       renderUsers();
+      renderUserDetail();
     }).catch(function (error) {
       alert(error.message || '刷新用户失败');
     });
@@ -992,7 +1392,17 @@
     if (!target.classList.contains('row-btn')) {
       return;
     }
-    const userId = target.dataset.userId;
+    const action = target.dataset.action;
+    const userId = Number(target.dataset.userId || 0);
+    if (!userId) {
+      return;
+    }
+    if (action === 'select-user') {
+      state.currentTab = 'users';
+      renderTabs();
+      selectUser(userId);
+      return;
+    }
     fetchJson('/api/admin/users/' + userId + '/activation-code', {
       method: 'POST'
     }).then(function (updatedUser) {
@@ -1000,8 +1410,24 @@
         return String(item.userId) === String(updatedUser.userId) ? updatedUser : item;
       });
       renderUsers();
+      renderUserDetail();
+      setUserMessage('激活码已刷新。', 'success');
     }).catch(function (error) {
-      alert(error.message || '生成激活码失败');
+      setUserMessage(error.message || '生成激活码失败', 'error');
+    });
+  }
+
+  function handleUserExamTableClick(event) {
+    const target = event.target;
+    if (!target.classList.contains('row-btn')) {
+      return;
+    }
+    const recordId = Number(target.dataset.recordId || 0);
+    if (!recordId) {
+      return;
+    }
+    loadExamRecordDetail(recordId).then(function () {
+      setUserMessage('答题详情已更新。', 'success');
     });
   }
 
@@ -1022,7 +1448,20 @@
       resetVideoForm();
     });
     els.userKeyword.addEventListener('input', renderUsers);
+    els.saveUserBtn.addEventListener('click', handleSaveUser);
+    els.reloadExamRecordsBtn.addEventListener('click', function () {
+      const selectedUser = getSelectedUser();
+      if (!selectedUser) {
+        setUserMessage('请先选择用户。', 'error');
+        return;
+      }
+      setUserMessage('正在刷新考试记录...', '');
+      loadUserExamRecords(selectedUser.userId).then(function () {
+        setUserMessage('考试记录已刷新。', 'success');
+      });
+    });
     els.userTableBody.addEventListener('click', handleUserTableClick);
+    els.userExamTableBody.addEventListener('click', handleUserExamTableClick);
     els.videoTableBody.addEventListener('click', handleVideoTableClick);
     document.querySelectorAll('.tab-btn').forEach(function (button) {
       button.addEventListener('click', function () {
@@ -1035,6 +1474,7 @@
   function bootstrap() {
     bindEvents();
     resetImportForm(false);
+    setUserMessage('', '');
     renderTabs();
     if (!state.token) {
       renderLoginState(false);

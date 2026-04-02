@@ -238,7 +238,7 @@
           <div class="panel-head">
             <div>
               <div class="panel-title">人员管理（激活码）</div>
-              <div class="panel-tip">可查看用户信息，并为单个用户生成或刷新激活码。</div>
+              <div class="panel-tip">可查看用户信息、维护基础资料，并查看用户考试记录与每题作答详情。</div>
             </div>
             <div class="filter-box">
               <input id="userKeyword" class="text-input small-input" placeholder="搜索姓名 / 身份证 / 职务 / 公司 / 手机 / openid">
@@ -264,6 +264,95 @@
               </thead>
               <tbody id="userTableBody"></tbody>
             </table>
+          </div>
+
+          <div id="userDetailPanel" class="detail-shell hidden">
+            <div class="detail-card">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">用户详情与资料维护</div>
+                  <div id="selectedUserHint" class="panel-tip">请选择左侧用户后查看详情。</div>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="field-block">
+                  <label class="field-label" for="userEditName">姓名</label>
+                  <input id="userEditName" class="text-input" placeholder="请输入姓名">
+                </div>
+                <div class="field-block">
+                  <label class="field-label" for="userEditIdCard">身份证</label>
+                  <input id="userEditIdCard" class="text-input" placeholder="请输入身份证">
+                </div>
+                <div class="field-block">
+                  <label class="field-label" for="userEditPosition">职务</label>
+                  <input id="userEditPosition" class="text-input" placeholder="请输入职务">
+                </div>
+                <div class="field-block">
+                  <label class="field-label" for="userEditPhone">手机号</label>
+                  <input id="userEditPhone" class="text-input" placeholder="请输入手机号">
+                </div>
+                <div class="field-block span-2">
+                  <label class="field-label" for="userEditCompany">公司名称</label>
+                  <input id="userEditCompany" class="text-input" placeholder="请输入公司名称">
+                </div>
+              </div>
+              <div class="action-row">
+                <button id="saveUserBtn" type="button" class="primary-btn">保存资料</button>
+                <button id="reloadExamRecordsBtn" type="button" class="ghost-btn">刷新考试记录</button>
+                <div id="userMessage" class="inline-message"></div>
+              </div>
+            </div>
+
+            <div class="detail-card">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">考试记录</div>
+                  <div class="panel-tip">展示该用户参加过的试卷、分数、答题时间和明细。</div>
+                </div>
+              </div>
+              <div id="userExamEmpty" class="empty-state">当前用户暂无考试记录。</div>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>记录 ID</th>
+                      <th>试卷名称</th>
+                      <th>分数</th>
+                      <th>正确题数</th>
+                      <th>用时</th>
+                      <th>提交时间</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="userExamTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div id="examRecordDetailPanel" class="detail-card hidden">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">答题详情</div>
+                  <div id="examRecordSummary" class="panel-tip">请选择一条考试记录查看每题答案。</div>
+                </div>
+              </div>
+              <div id="examRecordStats" class="stats-row"></div>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>题号</th>
+                      <th>题目</th>
+                      <th>选项</th>
+                      <th>用户答案</th>
+                      <th>正确答案</th>
+                      <th>结果</th>
+                    </tr>
+                  </thead>
+                  <tbody id="userExamAnswerBody"></tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </section>
       </section>
